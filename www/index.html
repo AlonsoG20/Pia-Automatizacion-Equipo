@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1A237E">
+<title>Planeación de demanda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--n:#1A237E;--n2:#3949AB;--bg:#F5F5F5;--ink:#1f2430;--mut:#6b7280;--ln:#e3e6ea;--ok:#2E7D32;--bad:#C62828;--wn:#9A6B00}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 Inter,Roboto,"Open Sans",system-ui,sans-serif;padding-bottom:calc(150px + env(safe-area-inset-bottom))}
+header{background:var(--n);color:#fff;padding:calc(12px + env(safe-area-inset-top)) 16px 12px;position:sticky;top:0;z-index:5}
+header h1{margin:0;font-size:18px;font-weight:700}header p{margin:0;font-size:12px;opacity:.75}
+main{max-width:1100px;margin:0 auto;padding:12px;display:grid;gap:12px}
+.scr{display:none;gap:12px;animation:in .28s ease}.scr.on{display:grid}
+@keyframes in{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+.card{background:#fff;border-radius:12px;box-shadow:0 4px 6px rgba(0,0,0,.1);padding:14px;min-width:0}
+.card h2{margin:0 0 8px;font-size:15px;font-weight:700}
+.hero{background:linear-gradient(135deg,var(--n),var(--n2));color:#fff}.hero h2{font-size:18px}.hero p{margin:0;opacity:.85}
+.flt{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+label{display:grid;gap:4px;font-size:12px;color:var(--mut)}
+select,input{font:inherit;color:var(--ink);border:1px solid var(--ln);border-radius:8px;padding:8px 10px;min-height:40px;background:#fff;min-width:140px}
+.btn{border:1px solid var(--ln);background:#fff;color:var(--ink);border-radius:8px;padding:8px 12px;font:600 13px Inter,sans-serif;cursor:pointer;min-height:40px;display:inline-flex;align-items:center}
+.btn.on,.btn.p{background:var(--n);border-color:var(--n);color:#fff}
+.btn:focus-visible,select:focus-visible,input:focus-visible,nav button:focus-visible,.fab:focus-visible,summary:focus-visible{outline:3px solid var(--n2);outline-offset:2px}
+.kpis,.g2{display:grid;gap:12px}.kpis{grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.kpi span{font-size:12px;color:var(--mut)}.kpi b{display:block;font-size:22px;font-weight:700;color:var(--n);margin:2px 0 6px}
+.chip{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600}
+.c-ok{background:#E8F5E9;color:var(--ok)}.c-bad{background:#FDECEA;color:var(--bad)}.c-wn{background:#FFF4DC;color:var(--wn)}.c-bl{background:#E8EAF6;color:var(--n)}
+.ch{position:relative;height:260px}
+.tw{max-height:460px;overflow:auto;border:1px solid var(--ln);border-radius:8px;margin-top:10px}
+table{border-collapse:collapse;width:100%;min-width:700px}
+th,td{padding:9px 10px;border-bottom:1px solid var(--ln);text-align:left;white-space:nowrap}
+th{position:sticky;top:0;background:#eef0f7;z-index:1}tbody tr:nth-child(even){background:#f7f8fb}
+.n{text-align:right}.up{color:var(--ok)}.dn{color:var(--bad)}
+.act{text-align:right}.act .btn{min-height:32px;padding:4px 10px;margin-left:6px}.del{color:var(--bad)}
+.emp{text-align:center;color:var(--mut);white-space:normal;padding:24px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.mx td,.mx th{text-align:center}.mx td{font-weight:600}
+.al{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+.al li{display:flex;justify-content:space-between;gap:8px;padding:8px 10px;border-left:4px solid #E0A526;background:#f7f8fa;border-radius:6px}.al .hi{border-left-color:var(--bad)}
+.cap{margin:8px 0 0;font-size:12px;color:var(--mut)}
+details{border-top:1px solid var(--ln);padding:10px 0}
+summary{cursor:pointer;font-weight:600;list-style:none;display:flex;justify-content:space-between}
+summary::-webkit-details-marker{display:none}summary::after{content:"+";color:var(--n);font-size:18px}details[open] summary::after{content:"–"}
+details p{margin:8px 0 0;color:#374151}
+.ptr{height:0;overflow:hidden;text-align:center;color:var(--mut);transition:height .15s}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;box-shadow:0 -2px 8px rgba(0,0,0,.1);display:flex;justify-content:space-around;padding:6px 0 calc(6px + env(safe-area-inset-bottom));z-index:6}
+nav button{background:none;border:0;display:grid;justify-items:center;gap:2px;color:var(--mut);font:600 11px Inter,sans-serif;padding:6px 14px;min-width:70px;cursor:pointer;border-radius:10px}
+nav button.on{color:var(--n);background:#E8EAF6}
+nav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.fab{position:fixed;right:16px;bottom:calc(86px + env(safe-area-inset-bottom));background:var(--n);color:#fff;border:0;border-radius:28px;padding:0 20px;height:52px;font:600 14px Inter,sans-serif;box-shadow:0 6px 12px rgba(0,0,0,.25);z-index:6;cursor:pointer;display:none}.fab.on{display:block}
+dialog{border:0;border-radius:12px;padding:16px;width:min(420px,92vw);box-shadow:0 10px 30px rgba(0,0,0,.3)}dialog::backdrop{background:#0008}
+dialog h2{margin:0 0 12px;font-size:16px}#f{display:grid;gap:10px}#f input,#f select{width:100%}.fb{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
+#toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:92vw;z-index:9}
+#toast.on{opacity:1}#toast.bad{background:var(--bad)}
+.ld .card{position:relative;overflow:hidden}.ld .card>*{visibility:hidden}
+.ld .card::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#eceff1 25%,#f8f9fa 50%,#eceff1 75%);background-size:200% 100%;animation:sh 1.1s linear infinite}
+@keyframes sh{to{background-position:-200% 0}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media(max-width:700px){.ch{height:230px}}
+</style>
+</head>
+<body class="ld">
+<!-- Para APK sin internet: guarda chart.umd.min.js (Chart.js 4.4.1) en esta carpeta y cambia el src por "chart.umd.min.js" -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<header><h1>Planeación de demanda</h1><p>Heineken México · datos de ejemplo · cifras en miles de cajas</p></header>
+
+<main>
+<section class="card flt" id="flt" aria-label="Filtros">
+  <label>Región<select id="fr"></select></label>
+  <label>Categoría<select id="fc"></select></label>
+  <button class="btn" id="clr">Limpiar filtros</button>
+</section>
+<p id="nochart" hidden style="color:var(--bad);margin:0">No se pudo cargar Chart.js. Conéctate a internet o usa la copia local indicada en el código.</p>
+
+<section class="scr on" id="sr">
+  <div class="card hero"><h2>Hola, bienvenido al sistema de planeación de la demanda</h2><p id="sub"></p></div>
+  <div class="kpis">
+    <div class="card kpi"><span>Demanda total del mes</span><b id="k1">–</b><div id="d1"></div></div>
+    <div class="card kpi"><span>Producto más solicitado</span><b id="k2">–</b><div id="d2"></div></div>
+    <div class="card kpi"><span>Estatus de cobertura</span><b id="k3">–</b><div id="d3"></div></div>
+    <div class="card kpi"><span>Precisión del pronóstico</span><b id="k4">–</b><div id="d4"></div></div>
+  </div>
+  <div class="g2">
+    <div class="card"><h2>Ventas por categoría</h2><div class="ch"><canvas id="c1"></canvas></div></div>
+    <div class="card"><h2>Mayores desviaciones del pronóstico</h2><ul class="al" id="al"></ul></div>
+  </div>
+</section>
+
+<section class="scr" id="sa">
+  <div class="card row"><h2 style="margin:0">Periodo</h2><div id="per"><button class="btn" data-p="3">3 meses</button> <button class="btn" data-p="6">6 meses</button> <button class="btn on" data-p="0">Todo</button></div></div>
+  <div class="card"><h2>Demanda real vs. pronosticada</h2><div class="ch"><canvas id="c0"></canvas></div></div>
+  <div class="g2">
+    <div class="card"><h2>Precisión mensual (%)</h2><div class="ch"><canvas id="c4"></canvas></div></div>
+    <div class="card"><h2>Ventas vs. pronóstico por región</h2><div class="ch"><canvas id="c2"></canvas></div></div>
+    <div class="card"><h2>Precisión por categoría (%)</h2><div class="ch"><canvas id="c3"></canvas></div></div>
+    <div class="card"><h2>Precisión por región y categoría</h2><div class="tw"><table class="mx" id="mx" style="min-width:0"></table></div><p class="cap">Verde: 95% o más. Amarillo: de 90% a 95%. Rojo: menos de 90%.</p></div>
+  </div>
+  <div class="card"><h2>Proyección de los próximos 3 meses</h2><div class="tw"><table id="pj" style="min-width:0"></table></div></div>
+</section>
+
+<section class="scr" id="sg">
+  <div class="ptr" id="ptr">Suelta para actualizar</div>
+  <div class="card">
+    <div class="row"><h2 style="margin:0">Registros <span id="cnt" style="font-weight:400;color:var(--mut)"></span></h2>
+      <div><label class="btn">Importar CSV<input type="file" id="imp" accept=".csv,text/csv" hidden></label> <button class="btn" id="exp">Exportar CSV</button> <button class="btn" id="rst">Restablecer</button></div></div>
+    <input id="qs" type="search" placeholder="Buscar por mes, región, categoría o estatus" style="width:100%;margin-top:10px">
+    <div class="tw"><table><thead><tr><th>Mes</th><th>Región</th><th>Categoría</th><th class="n">Ventas</th><th class="n">Pronóstico</th><th class="n">Precisión</th><th>Estatus</th><th></th></tr></thead><tbody id="tb"></tbody></table></div>
+    <p class="cap">En el celular, desliza hacia abajo desde el inicio de la lista para actualizar.</p>
+  </div>
+</section>
+
+<section class="scr" id="sm">
+  <div class="card">
+    <h2>Metodología</h2><p class="cap" style="margin:0 0 8px">Toca un tema para expandirlo.</p>
+    <details open><summary>Flujo de datos (ETL)</summary><p>Extracción por captura manual o importación CSV; transformación con validación de mes, región, categoría y cifras; consolidación por mes, región y categoría; y visualización con indicadores y gráficas que responden a los filtros.</p></details>
+    <details><summary>Precisión del pronóstico</summary><p>Precisión = 1 − (error absoluto total ÷ ventas totales). Con ventas de 100 y errores acumulados de 4, la precisión es 96%. La meta del proyecto es 95% o más.</p></details>
+    <details><summary>Proyección: regresión lineal (modelo en uso)</summary><p>Se ajusta una recta a las ventas mensuales con mínimos cuadrados, Y = a + b·t, y se extiende 3 meses. Es sencilla y transparente, pero no capta estacionalidad.</p></details>
+    <details><summary>Promedio móvil (alternativa propuesta)</summary><p>Pronostica con el promedio de los últimos k meses: Ŷ(t+1) = (Y(t) + Y(t−1) + … + Y(t−k+1)) ÷ k. Suaviza el ruido, pero reacciona lento a los cambios. Aún no está implementado en la app.</p></details>
+    <details><summary>Suavizamiento exponencial (alternativa propuesta)</summary><p>Da más peso a los datos recientes: S(t) = α·Y(t) + (1 − α)·S(t−1), con α entre 0 y 1. Aún no está implementado en la app.</p></details>
+    <details><summary>Estatus de cobertura y semáforo</summary><p>Se compara el pronóstico con las ventas del último mes. Entre −5% y +5% la cobertura es adecuada; por debajo de −5% hay riesgo de desabasto; por encima de +5%, posible sobreinventario. En la matriz de precisión, verde indica 95% o más, amarillo de 90% a 95% y rojo menos de 90%.</p></details>
+  </div>
+</section>
+</main>
+
+<button class="fab on" id="fab" aria-label="Nuevo registro">+ Nuevo registro</button>
+<nav aria-label="Navegación principal">
+  <button class="on" data-t="r"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg>Resumen</button>
+  <button data-t="a"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>Análisis</button>
+  <button data-t="g"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>Registros</button>
+  <button data-t="m"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20V3H6.5A2.5 2.5 0 004 5.5z"/><path d="M8 7h8M6.5 17a2.5 2.5 0 000 4H20v-4"/></svg>Metodología</button>
+</nav>
+
+<dialog id="dlg">
+  <h2 id="dt">Nuevo registro</h2>
+  <form id="f">
+    <label>Mes<input type="month" id="fm" required></label>
+    <label>Región<input id="fg" list="lr" required></label>
+    <label>Categoría<input id="fk" list="lc" required></label>
+    <label>Ventas (miles de cajas)<input type="number" id="fv" min="0" step="any" required></label>
+    <label>Pronóstico (miles de cajas)<input type="number" id="fp" min="0" step="any" required></label>
+    <label>Estatus<select id="fe"><option>Completado</option><option>Pendiente</option><option>En revisión</option></select></label>
+    <datalist id="lr"></datalist><datalist id="lc"></datalist>
+    <div class="fb"><button type="button" class="btn" id="cx">Cancelar</button><button class="btn p">Guardar registro</button></div>
+  </form>
+</dialog>
+<div id="toast" role="status"></div>
+
+<script>
+const KEY="demanda_heineken_v1",M=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+const ST={"Completado":"c-ok","Pendiente":"c-wn","En revisión":"c-bl"};
+const $=s=>document.querySelector(s);
+let data=[],edit=null,CH=[],tt,tab="r",PER=0;
+const fmt=n=>Math.round(n).toLocaleString("es-MX");
+const lab=ym=>M[+ym.slice(5,7)-1]+" "+ym.slice(2,4);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const sum=(a,k)=>a.reduce((s,x)=>s+x[k],0);
+const prec=a=>{const v=sum(a,"ventas");return v?100*(1-a.reduce((s,x)=>s+Math.abs(x.ventas-x.pronostico),0)/v):0};
+const grp=(a,k)=>{const m={};a.forEach(x=>(m[x[k]]=m[x[k]]||[]).push(x));return m};
+const uniq=k=>[...new Set(data.map(x=>x[k]))].sort();
+const nextId=()=>Math.max(0,...data.map(x=>x.id))+1;
+const chip=(t,c)=>`<span class="chip ${c}">${t}</span>`;
+const dl=(c,l)=>chip((c>=0?"▲ ":"▼ ")+Math.abs(c).toFixed(1)+"% "+l,c>=0?"c-ok":"c-bad");
+const hap=()=>{try{navigator.vibrate&&navigator.vibrate(12)}catch(e){}};
+function load(){try{const s=localStorage.getItem(KEY);if(s)return JSON.parse(s)}catch(e){}return null}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){toast("No se pudo guardar en este dispositivo.",1)}}
+function toast(m,bad){const t=$("#toast");t.textContent=m;t.className="on"+(bad?" bad":"");clearTimeout(tt);tt=setTimeout(()=>t.className="",3200)}
+
+function seed(){
+  let a=20260;const r=()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+  const bR={Norte:1.25,Centro:1.4,Occidente:1,Sur:.7},bC={Lager:1.3,Premium:.9,"Sin alcohol":.4,Especialidad:.6};
+  const out=[];let id=1;
+  for(let i=0;i<12;i++){
+    const d=new Date(2025,10+i,1),m=d.getMonth(),s=1+.18*Math.sin((m-2)/12*2*Math.PI);
+    const ym=d.getFullYear()+"-"+String(m+1).padStart(2,"0");
+    Object.keys(bR).forEach(g=>Object.keys(bC).forEach(c=>{
+      const v=Math.round(100*bR[g]*bC[c]*s*(.92+.16*r())),u=r();
+      out.push({id:id++,mes:ym,region:g,categoria:c,ventas:v,pronostico:Math.round(v*(.93+.14*r())),estatus:u<.7?"Completado":u<.9?"Pendiente":"En revisión"});
+    }));
+  }
+  return out;
+}
+
+function initCharts(){
+  if(!window.Chart){$("#nochart").hidden=false;return}
+  Chart.defaults.font.family='Inter,Roboto,system-ui,sans-serif';Chart.defaults.color="#6b7280";
+  const o={responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom",labels:{boxWidth:12}}}};
+  const ds=(l,c)=>({label:l,backgroundColor:c,borderColor:c,data:[]});
+  const V="#1A237E",P="#E0A526";
+  CH={
+    0:new Chart($("#c0"),{type:"line",data:{labels:[],datasets:[{...ds("Real",V),tension:.3,pointRadius:3},{...ds("Pronóstico",P),tension:.3,borderDash:[6,4],pointRadius:3},{...ds("Proyección","#5C6BC0"),tension:.3,borderDash:[2,4],pointRadius:3}]},options:{...o,scales:{y:{beginAtZero:true}}}}),
+    1:new Chart($("#c1"),{type:"doughnut",data:{labels:[],datasets:[{data:[],backgroundColor:[V,"#5C6BC0",P,"#90A4AE","#26A69A","#B0BEC5"]}]},options:{...o,cutout:"60%"}}),
+    2:new Chart($("#c2"),{type:"bar",data:{labels:[],datasets:[ds("Ventas",V),ds("Pronóstico",P)]},options:{...o,scales:{y:{beginAtZero:true}}}}),
+    3:new Chart($("#c3"),{type:"bar",data:{labels:[],datasets:[ds("Precisión %","#5C6BC0")]},options:{...o,plugins:{legend:{display:false}},scales:{y:{min:0,max:100}}}}),
+    4:new Chart($("#c4"),{type:"line",data:{labels:[],datasets:[{...ds("Precisión %",V),tension:.3,pointRadius:3}]},options:{...o,plugins:{legend:{display:false}},scales:{y:{suggestedMin:70,max:100}}}})
+  };
+}
+function setC(i,l,d){const c=CH[i];if(!c)return;c.data.labels=l;d.forEach((x,j)=>c.data.datasets[j].data=x);c.update()}
+function fill(id,k,all){const s=$(id),v=s.value,u=uniq(k);s.innerHTML=`<option value="">${all}</option>`+u.map(x=>`<option>${esc(x)}</option>`).join("");s.value=u.includes(v)?v:""}
+
+function render(){
+  fill("#fr","region","Todas las regiones");fill("#fc","categoria","Todas las categorías");
+  $("#lr").innerHTML=uniq("region").map(x=>`<option value="${esc(x)}">`).join("");
+  $("#lc").innerHTML=uniq("categoria").map(x=>`<option value="${esc(x)}">`).join("");
+  const R=$("#fr").value,C=$("#fc").value,a=data.filter(x=>(!R||x.region==R)&&(!C||x.categoria==C));
+  const mg=grp(a,"mes"),ms=Object.keys(mg).sort(),n=ms.length,ys=ms.map(k=>sum(mg[k],"ventas")),fut=[],pj=[];
+  if(n>=3){
+    const mx=(n-1)/2,my=ys.reduce((s,y)=>s+y,0)/n;let sxy=0,sxx=0;
+    ys.forEach((y,i)=>{sxy+=(i-mx)*(y-my);sxx+=(i-mx)**2});
+    const sl=sxy/sxx,ic=my-sl*mx,[yy,mm]=ms[n-1].split("-").map(Number);
+    for(let j=1;j<=3;j++){const f=new Date(yy,mm-1+j,1);fut.push(f.getFullYear()+"-"+String(f.getMonth()+1).padStart(2,"0"));pj.push(Math.max(0,Math.round(ic+sl*(n-1+j))))}
+  }
+  /* Resumen */
+  const last=ms[n-1],lm=last?mg[last]:[],lv=sum(lm,"ventas"),lp=sum(lm,"pronostico"),ld=lv?(lp-lv)/lv*100:0;
+  const dv=n>1&&ys[n-2]?(lv/ys[n-2]-1)*100:null;
+  $("#sub").textContent=last?"Datos de "+lab(last)+" con los filtros actuales. Cifras en miles de cajas.":"No hay datos con estos filtros.";
+  $("#k1").textContent=fmt(lv);$("#d1").innerHTML=dv==null?"":dl(dv,"vs. mes anterior");
+  const lc=grp(lm,"categoria"),top=Object.keys(lc).sort((p,q)=>sum(lc[q],"ventas")-sum(lc[p],"ventas"))[0];
+  $("#k2").textContent=top||"–";$("#d2").innerHTML=top&&lv?chip((sum(lc[top],"ventas")/lv*100).toFixed(0)+"% de las ventas del mes","c-bl"):"";
+  const st=!lv?["Sin datos","c-bl"]:Math.abs(ld)<=5?["Adecuada","c-ok"]:ld<0?["Riesgo de desabasto","c-bad"]:["Posible sobreinventario","c-wn"];
+  $("#k3").textContent=st[0];$("#d3").innerHTML=lv?chip("Desviación "+(ld>0?"+":"")+ld.toFixed(1)+"%",st[1]):"";
+  const pr=prec(a),v=sum(a,"ventas");
+  $("#k4").textContent=v?pr.toFixed(1)+"%":"–";$("#d4").innerHTML=v?chip("Meta 95%",pr>=95?"c-ok":"c-bad"):"";
+  const cg=grp(a,"categoria"),cs=Object.keys(cg).sort();
+  setC(1,cs,[cs.map(k=>sum(cg[k],"ventas"))]);
+  const al=a.filter(x=>x.ventas).map(x=>({x,e:(x.pronostico-x.ventas)/x.ventas*100})).sort((p,q)=>Math.abs(q.e)-Math.abs(p.e)).slice(0,5);
+  $("#al").innerHTML=al.map(({x,e})=>`<li class="${Math.abs(e)>=10?"hi":""}"><span>${lab(x.mes)}, ${esc(x.region)}, ${esc(x.categoria)}</span><b class="${e>=0?"up":"dn"}">${e>0?"+":""}${e.toFixed(1)}%</b></li>`).join("")||"<li>Sin datos.</li>";
+  /* Análisis */
+  const k=PER?Math.max(0,n-PER):0,ks=ms.slice(k),ap=a.filter(x=>ks.includes(x.mes));
+  setC(0,ks.concat(fut).map(lab),[ys.slice(k),ks.map(m=>sum(mg[m],"pronostico")),n>=3?ys.map((y,i)=>i==n-1?y:null).slice(k).concat(pj):[]]);
+  setC(4,ks.map(lab),[ks.map(m=>+prec(mg[m]).toFixed(1))]);
+  const rg=grp(ap,"region"),rs=Object.keys(rg).sort(),cg2=grp(ap,"categoria"),cs2=Object.keys(cg2).sort();
+  setC(2,rs,[rs.map(g=>sum(rg[g],"ventas")),rs.map(g=>sum(rg[g],"pronostico"))]);
+  setC(3,cs2,[cs2.map(c=>+prec(cg2[c]).toFixed(1))]);
+  const cl=p=>p==null?"<td>–</td>":`<td style="background:${p>=95?"#dcefdc":p>=90?"#fbeec2":"#f8d7d3"}">${p.toFixed(1)}%</td>`;
+  $("#mx").innerHTML="<tr><th></th>"+cs2.map(c=>`<th>${esc(c)}</th>`).join("")+"</tr>"+rs.map(g=>`<tr><th>${esc(g)}</th>`+cs2.map(c=>{const b=ap.filter(x=>x.region==g&&x.categoria==c);return cl(sum(b,"ventas")?prec(b):null)}).join("")+"</tr>").join("");
+  $("#pj").innerHTML=pj.length?"<tr><th>Mes</th><th class='n'>Ventas proyectadas</th><th class='n'>Vs. último mes</th></tr>"+pj.map((y,i)=>{const c=ys[n-1]?(y/ys[n-1]-1)*100:0;return`<tr><td>${lab(fut[i])}</td><td class="n">${fmt(y)}</td><td class="n ${c>=0?"up":"dn"}">${c>0?"+":""}${c.toFixed(1)}%</td></tr>`}).join(""):`<tr><td class="emp">Se necesitan al menos 3 meses de datos.</td></tr>`;
+  /* Registros */
+  const s=$("#qs").value.trim().toLowerCase(),rows=a.filter(x=>!s||(lab(x.mes)+" "+x.region+" "+x.categoria+" "+(x.estatus||"Completado")).toLowerCase().includes(s)).sort((x,y)=>y.mes.localeCompare(x.mes)||x.id-y.id);
+  $("#tb").innerHTML=rows.map(x=>{const e=x.estatus||"Completado";return`<tr><td>${lab(x.mes)}</td><td>${esc(x.region)}</td><td>${esc(x.categoria)}</td><td class="n">${fmt(x.ventas)}</td><td class="n">${fmt(x.pronostico)}</td><td class="n">${x.ventas?(100*(1-Math.abs(x.ventas-x.pronostico)/x.ventas)).toFixed(1)+"%":"–"}</td><td>${chip(e,ST[e]||"c-bl")}</td><td class="act"><button class="btn" data-e="${x.id}">Editar</button><button class="btn del" data-d="${x.id}">Eliminar</button></td></tr>`}).join("")
+    ||`<tr><td colspan="8" class="emp">No hay registros con estos filtros. Agrega uno con “Nuevo registro”.</td></tr>`;
+  $("#cnt").textContent="("+rows.length+")";
+}
+
+/* Navegación */
+function go(t){
+  tab=t;
+  document.querySelectorAll(".scr").forEach(s=>s.classList.toggle("on",s.id=="s"+t));
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.t==t));
+  $("#fab").classList.toggle("on",t=="r"||t=="g");$("#flt").hidden=t=="m";
+  scrollTo(0,0);Object.values(CH).forEach(c=>c.resize());
+}
+$("nav").onclick=e=>{const b=e.target.closest("button");if(b)go(b.dataset.t)};
+document.addEventListener("click",e=>{if(e.target.closest("button,.btn"))hap()});
+$("#per").onclick=e=>{const b=e.target.closest("button");if(!b)return;PER=+b.dataset.p;[...$("#per").children].forEach(x=>x.classList.toggle("on",x==b));render()};
+
+/* Skeleton y pull-to-refresh */
+function withLoad(fn,ms){document.body.classList.add("ld");setTimeout(()=>{fn();document.body.classList.remove("ld")},ms||650)}
+function refresh(){withLoad(()=>{data=load()||data;render();toast("Datos actualizados.")},800)}
+let y0=null;const ptr=$("#ptr");
+addEventListener("touchstart",e=>{y0=scrollY<=0&&tab=="g"?e.touches[0].clientY:null},{passive:true});
+addEventListener("touchmove",e=>{if(y0==null)return;const d=e.touches[0].clientY-y0;ptr.style.height=d>0?Math.min(d/2,44)+"px":"0"},{passive:true});
+addEventListener("touchend",()=>{if(y0==null)return;const h=parseFloat(ptr.style.height)||0;ptr.style.height="0";y0=null;if(h>=40)refresh()},{passive:true});
+
+/* CRUD */
+function openF(id){
+  edit=id||null;
+  const x=id?data.find(r=>r.id==id):{mes:"2026-10",region:"",categoria:"",ventas:"",pronostico:"",estatus:"Pendiente"};
+  $("#dt").textContent=id?"Editar registro":"Nuevo registro";
+  $("#fm").value=x.mes;$("#fg").value=x.region;$("#fk").value=x.categoria;$("#fv").value=x.ventas;$("#fp").value=x.pronostico;$("#fe").value=x.estatus||"Completado";
+  $("#dlg").showModal();
+}
+$("#fab").onclick=()=>openF();
+$("#cx").onclick=()=>$("#dlg").close();
+$("#f").onsubmit=e=>{
+  e.preventDefault();
+  const r={mes:$("#fm").value,region:$("#fg").value.trim(),categoria:$("#fk").value.trim(),ventas:+$("#fv").value,pronostico:+$("#fp").value,estatus:$("#fe").value};
+  if(edit)Object.assign(data.find(x=>x.id==edit),r);else{r.id=nextId();data.push(r)}
+  save();$("#dlg").close();render();toast(edit?"Registro actualizado.":"Registro agregado.");
+};
+$("#tb").onclick=e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.e)openF(+b.dataset.e);
+  else if(b.dataset.d&&confirm("¿Eliminar este registro?")){data=data.filter(x=>x.id!=b.dataset.d);save();render();toast("Registro eliminado.")}
+};
+$("#fr").onchange=$("#fc").onchange=$("#qs").oninput=render;
+$("#clr").onclick=()=>{$("#fr").value="";$("#fc").value="";render()};
+$("#rst").onclick=()=>{if(confirm("Se reemplazarán todos los registros por los datos de ejemplo. ¿Continuar?")){data=seed();save();render();toast("Datos de ejemplo restaurados.")}};
+
+/* CSV */
+const q=v=>/[",\n;]/.test(v)?'"'+String(v).replace(/"/g,'""')+'"':v;
+$("#exp").onclick=async()=>{
+  const h=["mes","region","categoria","ventas","pronostico","estatus"];
+  const csv=[h.join(",")].concat(data.map(x=>h.map(k=>q(k=="estatus"?(x.estatus||"Completado"):x[k])).join(","))).join("\r\n");
+  const P=window.Capacitor&&Capacitor.Plugins;
+  if(P&&P.Filesystem&&P.Share){
+    try{const w=await P.Filesystem.writeFile({path:"demanda_heineken.csv",data:"\ufeff"+csv,directory:"CACHE",encoding:"utf8"});await P.Share.share({title:"Demanda Heineken",url:w.uri})}
+    catch(e){toast("No se pudo compartir el CSV.",1)}
+    return;
+  }
+  const u=URL.createObjectURL(new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"}));
+  const a=document.createElement("a");a.href=u;a.download="demanda_heineken.csv";document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(u),1500);toast("CSV exportado.");
+};
+function parse(t){
+  const rows=[];let r=[],c="",inq=false;t=t.replace(/^\ufeff/,"");
+  for(let i=0;i<t.length;i++){const ch=t[i];
+    if(inq){if(ch=='"'){if(t[i+1]=='"'){c+='"';i++}else inq=false}else c+=ch}
+    else if(ch=='"')inq=true;
+    else if(ch==","||ch==";"){r.push(c);c=""}
+    else if(ch=="\n"||ch=="\r"){if(ch=="\r"&&t[i+1]=="\n")i++;r.push(c);c="";rows.push(r);r=[]}
+    else c+=ch}
+  if(c||r.length){r.push(c);rows.push(r)}
+  return rows.filter(x=>x.some(y=>y.trim()));
+}
+$("#imp").onchange=async e=>{
+  const f=e.target.files[0];e.target.value="";if(!f)return;
+  const rows=parse(await f.text());if(!rows.length)return toast("El archivo está vacío.",1);
+  const h=rows.shift().map(x=>x.trim().toLowerCase()),ix=k=>h.indexOf(k);
+  const miss=["mes","region","categoria","ventas","pronostico"].filter(k=>ix(k)<0);
+  if(miss.length)return toast("Faltan columnas: "+miss.join(", ")+".",1);
+  const g=(r,k)=>(r[ix(k)]||"").trim(),num=s=>s===""?NaN:+s;
+  let id=nextId()-1,ok=0,bad=0;
+  rows.forEach(r=>{
+    const es=g(r,"estatus"),o={mes:g(r,"mes"),region:g(r,"region"),categoria:g(r,"categoria"),ventas:num(g(r,"ventas")),pronostico:num(g(r,"pronostico")),estatus:ST[es]?es:"Completado"};
+    if(/^\d{4}-\d{2}$/.test(o.mes)&&o.region&&o.categoria&&isFinite(o.ventas)&&isFinite(o.pronostico)){o.id=++id;data.push(o);ok++}else bad++;
+  });
+  save();render();
+  toast(ok+" registros importados"+(bad?", "+bad+" omitidos por datos no válidos (mes como AAAA-MM).":"."),bad&&!ok);
+};
+
+/* Inicio */
+data=load()||seed();
+initCharts();render();
+setTimeout(()=>document.body.classList.remove("ld"),700);
+</script>
+</body>
+</html>
