@@ -1,6 +1,6 @@
 # Planeación de demanda: app Android con Capacitor
 
-Dashboard de planeación de la demanda para Heineken México. Muestra indicadores de ventas, pronóstico y precisión, con filtros por región y categoría, gráficas, proyección a 3 meses, gestión de registros (alta, edición y eliminación) e importación y exportación de CSV. Los datos se guardan de forma local en el dispositivo, sin base de datos.
+Dashboard de planeación de la demanda para una empresa de ejemplo. Muestra indicadores de ventas, pronóstico y precisión, con filtros por región y categoría, gráficas, proyección a 3 meses, gestión de registros (alta, edición y eliminación) e importación y exportación de CSV. Los datos se guardan de forma local en el dispositivo, sin base de datos.
 
 Los datos incluidos son hipotéticos y sirven para demostrar el funcionamiento del sistema.
 
